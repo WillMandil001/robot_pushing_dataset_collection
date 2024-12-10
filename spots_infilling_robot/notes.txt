@@ -1,0 +1,142 @@
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+Fresh notes 11/2024
+
+1. copy xela folder (with the calibration scripts) to /etc/
+    $ sudo cp -r /home/willmandil/xela /catkin_ws/src/
+
+2. give it 777 access:
+    $ sudo chmod -R 777 /catkin_ws/src/xela/
+
+3. Set the .ini script correctly:
+    ID: 5
+    model = XC168E272
+    -these are set based on the model name on the back of the sensor pad and the id on the front of the connector to the xela pad!!!! These must be correct for ./xela_vis to work
+
+4. Run the Config script:
+    $ cd catkin_ws/src/xela/scripts/
+    $ ./xela_conf -d socketcan -c slcan0
+    - enter y and press enter
+
+---- once configured:
+
+1. Connect the can to usb device:
+    $ sudo /usr/local/bin/slcan_add.sh ttyUSB0
+
+2. Check it is connected with:
+    $ ifconfig slcan0
+    - if showing something like below then it is running:
+        slcan0: flags=193<UP,RUNNING,NOARP>  mtu 16
+        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 10  (UNSPEC)
+        RX packets 1275182  bytes 10201456 (10.2 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 2  bytes 4 (4.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+3. start up the xela server:
+    $ cd catkin_ws/src/xela_server/scripts/
+    $ sudo ./xela_server -f xServ.ini 
+
+4. Then run the visualisation script to see if its working :d
+    $ cd catkin_ws/src/xela_server/scripts/
+    $ ./xela_viz
+
+
+---- once its all running:
+
+1. Run the sensor:
+    $ cd catkin_ws/src/xela_server/scripts/
+    $ sudo ./xela_server -f xServ.ini
+
+2. Run the xela_publisher:
+    $ roscore
+    $ rosrun xela_server xela_publisher.py
+
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+Xela setup
+sudo slcand -o -s8 -t hw -S 3000000 /dev/ttyUSB0
+sudo ifconfig slcan0 up
+
+cd catkin_ws/src/xela_server/scripts
+./xela_server
+./xela_viz
+
+rosrun xela_server xela_publisher.py
+
+edit the .ini file in /etc/xela/ to be the xela sensor we have (this is for the callibration)
+
+if issues: ./xela_conf -c slcan0
+then y and enter
+
+--------------------------------------------------------
+Xela Sensor:
+~/catkin_ws/src/xela_server/scripts$ ./xela_server
+rosrun xela_server xela_publisher.py
+
+--------------------------------------------------------
+Pilz industrial planner motion in one direction:
+    roslaunch robot.launch
+    rosrun tabletop_pushing data_collection_pilz.py
+
+--------------------------------------------------------
+Impedance control one direction pushing:
+TODO
+
+--------------------------------------------------------
+Impedance control 1D dataset pushing:
+TODO
+
+--------------------------------------------------------
+Impedance control box pushing:
+    roslaunch robot_impedance_controller_advanced.launch
+
+Change the Controller here:
+/home/willmandil/catkin_ws/src/franka_ros/franka_control/launch/franka_control.launch
+
+Depending on which controller you want to use (position for move_to_start.launch)
+Depending on which controller you want to use (velocity for robot_cartesian_velocity_controller.launch)
+
+<!-- <node name="state_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="franka_state_controller position_joint_trajectory_controller"/> -->
+<node name="state_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="franka_state_controller cartesian_velocity_example_controller"/>
+
+
+
+#### in the catkin_ws/src/...ini
+[CAN]
+bustype = socketcan
+channel = slcan0
+[viz]
+max_offset = 100
+max_size = 100
+[debug]
+sens_print = full
+[sensor]
+num_of_sensor = 1
+model = XC168E272
+ctrl_id = 2
+
+
+
+
+
+
+#### in the /etc/xela/...ini
+[CAN]
+bustype = socketcan
+channel = slcan0
+[viz]
+max_offset = 200
+max_size = 500
+[debug]
+sens_print = full
+[sensor]
+num_brd = 1
+ctr_ver = 2
+ctrl_id = 5
+model = XR1844
+channel = 0
